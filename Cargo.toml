@@ -6,5 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tui = "0.19.0"
 crossterm = "0.25"
+dotenvy = "0.15"
+# sqlx = { version = "0.7.0-alpha.2", features = [ "sqlite", "runtime-tokio", "tls-native" ]}
+sqlx = { git = "https://github.com/launchbadge/sqlx", branch = "main", features =  [ "sqlite", "runtime-tokio", "tls-native-tls"  ] }
+tokio = { version = "1.27.0", features = [ "full" ] }
+tui = "0.19.0"

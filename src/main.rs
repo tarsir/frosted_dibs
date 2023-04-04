@@ -1,4 +1,10 @@
+mod app_state;
+mod database;
+use dotenvy::dotenv;
+use std::env;
 use std::{thread, io, time::Duration};
+use sqlx::sqlite::SqlitePool;
+use sqlx::error::Error;
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen};
 use crossterm::event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode};
 use crossterm::execute;
@@ -9,7 +15,13 @@ use tui::{backend::CrosstermBackend, Terminal};
 use tui::widgets::{Widget, Block, Borders, ListItem, List};
 use tui::layout::{Layout, Constraint, Direction};
 
-fn main() -> Result<(), io::Error>{
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>>{
+    // database setup
+    dotenv().expect(".env file not found");
+    let pool = SqlitePool::connect(&env::var("DATABASE_URL")?).await?;
+    let tables = database::get_tables(&pool).await?;
+
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
