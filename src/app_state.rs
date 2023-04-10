@@ -1,8 +1,9 @@
-use std::{option::Option, collections::HashMap};
+use std::{collections::HashMap, option::Option};
 
-use tui::widgets::{TableState, ListState};
+use sea_orm::DatabaseConnection;
+use tui::widgets::{ListState, TableState};
 
-use crate::database::TableInfoRow;
+use crate::database::sqlite::TableInfoRow;
 
 #[derive(Debug, Clone)]
 pub enum UserPanels {
@@ -18,6 +19,8 @@ impl Default for UserPanels {
 
 #[derive(Debug, Default, Clone)]
 pub struct State {
+    pub db_url: String,
+    pub connection_info: DatabaseConnection,
     pub tables: Vec<String>,
     pub current_table: String,
     pub last_results: Vec<HashMap<String, Option<String>>>,
@@ -29,13 +32,12 @@ pub struct State {
 
 impl State {
     pub fn switch_panel(&mut self) {
-        self.panel = 
-            match &self.panel {
-                UserPanels::Tables(s) => UserPanels::Rows(self.table_state.clone()),
-                UserPanels::Rows(s) => UserPanels::Tables(self.list_state.clone()),
-            };
+        self.panel = match &self.panel {
+            UserPanels::Tables(_) => UserPanels::Rows(self.table_state.clone()),
+            UserPanels::Rows(_) => UserPanels::Tables(self.list_state.clone()),
+        };
     }
-    
+
     pub fn next(&mut self) {
         let selected = match &self.panel {
             UserPanels::Tables(s) => s.selected(),
@@ -43,7 +45,7 @@ impl State {
         };
         let i = match selected {
             Some(i) => {
-                if i >= self.last_results.len() - 1{
+                if i >= self.last_results.len() - 1 {
                     0
                 } else {
                     i + 1
@@ -55,11 +57,11 @@ impl State {
             UserPanels::Tables(ref mut s) => {
                 self.list_state.select(Some(i));
                 s.select(Some(i))
-            },
+            }
             UserPanels::Rows(ref mut s) => {
                 self.table_state.select(Some(i));
                 s.select(Some(i))
-            },
+            }
         };
     }
 
@@ -82,11 +84,11 @@ impl State {
             UserPanels::Tables(ref mut s) => {
                 self.list_state.select(Some(i));
                 s.select(Some(i))
-            },
+            }
             UserPanels::Rows(ref mut s) => {
                 self.table_state.select(Some(i));
                 s.select(Some(i))
-            },
+            }
         };
     }
 }
